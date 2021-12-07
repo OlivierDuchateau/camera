@@ -25,7 +25,7 @@ public class Camera.Widgets.CameraView : Gtk.Stack {
     public signal void recording_finished (string file_path);
 
     private Gtk.Grid status_grid;
-    private Granite.Widgets.AlertView no_device_view;
+    // private Granite.Widgets.AlertView no_device_view;
     private Gtk.Label status_label;
     Gtk.Widget gst_video_widget;
 
@@ -71,8 +71,9 @@ public class Camera.Widgets.CameraView : Gtk.Stack {
     public signal void camera_removed (Gst.Device camera);
 
     construct {
-        var spinner = new Gtk.Spinner ();
-        spinner.active = true;
+        var spinner = new Gtk.Spinner () {
+            spinning = true
+        };
 
         status_label = new Gtk.Label (null);
 
@@ -81,17 +82,17 @@ public class Camera.Widgets.CameraView : Gtk.Stack {
             halign = Gtk.Align.CENTER,
             valign = Gtk.Align.CENTER
         };
-        status_grid.add (spinner);
-        status_grid.add (status_label);
+        status_grid.attach (spinner, 0, 0);
+        status_grid.attach (status_label, 1, 0);
 
-        no_device_view = new Granite.Widgets.AlertView (
-            _("No Supported Camera Found"),
-            _("Connect a webcam or other supported video device to take photos and video."),
-            ""
-        );
+        // no_device_view = new Granite.Widgets.AlertView (
+        //     _("No Supported Camera Found"),
+        //     _("Connect a webcam or other supported video device to take photos and video."),
+        //     ""
+        // );
 
-        add (status_grid);
-        add (no_device_view);
+        add_child (status_grid);
+        // add (no_device_view);
         monitor.get_bus ().add_watch (GLib.Priority.DEFAULT, on_bus_message);
 
         var caps = new Gst.Caps.empty_simple ("video/x-raw");
@@ -105,8 +106,8 @@ public class Camera.Widgets.CameraView : Gtk.Stack {
     private void on_camera_removed (Gst.Device device) {
         camera_removed (device);
         if (n_cameras == 0) {
-            no_device_view.show ();
-            visible_child = no_device_view;
+            // no_device_view.show ();
+            // visible_child = no_device_view;
         } else {
             change_camera (monitor.get_devices ().nth_data (0));
         }
@@ -215,7 +216,7 @@ public class Camera.Widgets.CameraView : Gtk.Stack {
             var gtksink = pipeline.get_by_name ("gtksink");
             gtksink.get ("widget", out gst_video_widget);
 
-            add (gst_video_widget);
+            add_child (gst_video_widget);
             gst_video_widget.show ();
 
             visible_child = gst_video_widget;
@@ -223,9 +224,9 @@ public class Camera.Widgets.CameraView : Gtk.Stack {
         } catch (Error e) {
             // It is possible that there is another camera present that could selected so do not show
             // no_device_view
-            var dialog = new Granite.MessageDialog.with_image_from_icon_name (_("Unable To View Camera"), e.message, "dialog-error");
-            dialog.run ();
-            dialog.destroy ();
+            // var dialog = new Granite.MessageDialog.with_image_from_icon_name (_("Unable To View Camera"), e.message, "dialog-error");
+            // dialog.run ();
+            // dialog.destroy ();
         }
     }
 

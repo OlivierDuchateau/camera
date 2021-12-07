@@ -19,7 +19,7 @@
  * Authored by: Marcus Wichelmann <marcus.wichelmann@hotmail.de>
  */
 
-public class Camera.MainWindow : Hdy.ApplicationWindow {
+public class Camera.MainWindow : Gtk.ApplicationWindow {
     public const string ACTION_PREFIX = "win.";
     public const string ACTION_FULLSCREEN = "fullscreen";
     public const string ACTION_TAKE_PHOTO = "take_photo";
@@ -46,19 +46,17 @@ public class Camera.MainWindow : Hdy.ApplicationWindow {
     }
 
     construct {
-        Hdy.init ();
+        // var granite_settings = Granite.Settings.get_default ();
+        // var gtk_settings = Gtk.Settings.get_default ();
 
-        var granite_settings = Granite.Settings.get_default ();
-        var gtk_settings = Gtk.Settings.get_default ();
+        // gtk_settings.gtk_application_prefer_dark_theme = granite_settings.prefers_color_scheme == Granite.Settings.ColorScheme.DARK;
 
-        gtk_settings.gtk_application_prefer_dark_theme = granite_settings.prefers_color_scheme == Granite.Settings.ColorScheme.DARK;
+        // granite_settings.notify["prefers-color-scheme"].connect (() => {
+        //     gtk_settings.gtk_application_prefer_dark_theme = granite_settings.prefers_color_scheme == Granite.Settings.ColorScheme.DARK;
+        // });
 
-        granite_settings.notify["prefers-color-scheme"].connect (() => {
-            gtk_settings.gtk_application_prefer_dark_theme = granite_settings.prefers_color_scheme == Granite.Settings.ColorScheme.DARK;
-        });
-
-        weak Gtk.IconTheme default_theme = Gtk.IconTheme.get_default ();
-        default_theme.add_resource_path ("/io/elementary/camera");
+        // weak Gtk.IconTheme default_theme = Gtk.IconTheme.get_default ();
+        // default_theme.add_resource_path ("/io/elementary/camera");
 
         this.title = _("Camera");
         icon_name = "io.elementary.camera";
@@ -68,45 +66,47 @@ public class Camera.MainWindow : Hdy.ApplicationWindow {
         camera_view = new Widgets.CameraView ();
         camera_view.bind_property ("horizontal-flip", header_bar, "horizontal-flip", GLib.BindingFlags.BIDIRECTIONAL | GLib.BindingFlags.SYNC_CREATE);
 
-        var overlay = new Gtk.Overlay ();
-        overlay.add (camera_view);
+        var overlay = new Gtk.Overlay () {
+            child = camera_view
+        };
 
-        var recording_finished_toast = new Granite.Widgets.Toast (_("Saved to Videos"));
-        recording_finished_toast.set_default_action (_("View File"));
-        recording_finished_toast.set_data ("location", "");
-        recording_finished_toast.default_action.connect (() => {
-            var file_path = recording_finished_toast.get_data<string> ("location");
-            var file = GLib.File.new_for_path (file_path);
-            try {
-                var context = get_display ().get_app_launch_context ();
-                context.set_timestamp (Gtk.get_current_event_time ());
-                AppInfo.launch_default_for_uri (file.get_parent ().get_uri (), context);
-            } catch (Error e) {
-                warning ("Error launching file manager: %s", e.message);
-            }
-        });
-        overlay.add_overlay (recording_finished_toast);
+        // var recording_finished_toast = new Granite.Widgets.Toast (_("Saved to Videos"));
+        // recording_finished_toast.set_default_action (_("View File"));
+        // recording_finished_toast.set_data ("location", "");
+        // recording_finished_toast.default_action.connect (() => {
+        //     var file_path = recording_finished_toast.get_data<string> ("location");
+        //     var file = GLib.File.new_for_path (file_path);
+        //     try {
+        //         var context = get_display ().get_app_launch_context ();
+        //         context.set_timestamp (Gtk.get_current_event_time ());
+        //         AppInfo.launch_default_for_uri (file.get_parent ().get_uri (), context);
+        //     } catch (Error e) {
+        //         warning ("Error launching file manager: %s", e.message);
+        //     }
+        // });
+        // overlay.add_overlay (recording_finished_toast);
 
-        var recording_finished_fail_toast = new Granite.Widgets.Toast (_("Recording failed"));
-        overlay.add_overlay (recording_finished_fail_toast);
+        // var recording_finished_fail_toast = new Granite.Widgets.Toast (_("Recording failed"));
+        // overlay.add_overlay (recording_finished_fail_toast);
 
         camera_view.recording_finished.connect ((file_path) => {
-            if (file_path == "") {
-                recording_finished_fail_toast.send_notification ();
-            } else {
-                recording_finished_toast.set_data ("location", file_path);
-                recording_finished_toast.send_notification ();
-            }
+            // if (file_path == "") {
+            //     recording_finished_fail_toast.send_notification ();
+            // } else {
+            //     recording_finished_toast.set_data ("location", file_path);
+            //     recording_finished_toast.send_notification ();
+            // }
         });
 
         var grid = new Gtk.Grid ();
         grid.attach (header_bar, 0, 0);
         grid.attach (overlay, 0, 1);
 
-        var window_handle = new Hdy.WindowHandle ();
-        window_handle.add (grid);
+        var window_handle = new Gtk.WindowHandle () {
+            child = grid
+        };
 
-        add (window_handle);
+        child = window_handle;
 
         timer_running = false;
         camera_view.camera_added.connect (header_bar.add_camera_option);
@@ -120,11 +120,11 @@ public class Camera.MainWindow : Hdy.ApplicationWindow {
     }
 
     private void on_fullscreen () {
-        if (Gdk.WindowState.FULLSCREEN in get_window ().get_state ()) {
-            unfullscreen ();
-        } else {
-            fullscreen ();
-        }
+        // if (Gdk.WindowState.FULLSCREEN in get_window ().get_state ()) {
+        //     unfullscreen ();
+        // } else {
+        //     fullscreen ();
+        // }
     }
 
     private void on_take_photo () {
@@ -155,26 +155,26 @@ public class Camera.MainWindow : Hdy.ApplicationWindow {
         }
     }
 
-    public override bool configure_event (Gdk.EventConfigure event) {
-        if (configure_id != 0) {
-            GLib.Source.remove (configure_id);
-        }
+    // public override bool configure_event (Gdk.EventConfigure event) {
+    //     if (configure_id != 0) {
+    //         GLib.Source.remove (configure_id);
+    //     }
 
-        configure_id = Timeout.add (100, () => {
-            configure_id = 0;
+    //     configure_id = Timeout.add (100, () => {
+    //         configure_id = 0;
 
-            if (is_maximized) {
-                Application.settings.set_boolean ("window-maximized", true);
-            } else {
-                Application.settings.set_boolean ("window-maximized", false);
-                int width, height;
-                get_size (out width, out height);
-                Application.settings.set ("window-size", "(ii)", width, height);
-            }
+    //         if (is_maximized) {
+    //             Application.settings.set_boolean ("window-maximized", true);
+    //         } else {
+    //             Application.settings.set_boolean ("window-maximized", false);
+    //             int width, height;
+    //             get_size (out width, out height);
+    //             Application.settings.set ("window-size", "(ii)", width, height);
+    //         }
 
-            return false;
-        });
+    //         return false;
+    //     });
 
-        return base.configure_event (event);
-    }
+    //     return base.configure_event (event);
+    // }
 }
